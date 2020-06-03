@@ -1,0 +1,26 @@
+from os.path import join
+import pandas as pd
+
+configfile: 'config.yml'
+
+#needed since std meshes sometimes use L/R instead of lh/rh
+hemi_to_H = dict({'lh': 'L', 'rh': 'R'})
+
+wildcard_constraints:
+    surfname='white|pial|sphere.reg',
+    volname='T1'
+
+#load participants.tsv file, and strip off sub- from participant_id column
+df = pd.read_table(config['participants_tsv'])
+subjects = df.participant_id.to_list() 
+subjects = [ s.strip('sub-') for s in subjects ]
+    
+
+hemis = 'lh rh'.split()
+
+
+
+rule all:
+    input: expand('results/sub-{subject}/{hemi}.native.hcp-mmp.nii.gz',subject=subjects,hemi=hemis)
+
+
