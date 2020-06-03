@@ -1,7 +1,7 @@
 from os.path import join
 import pandas as pd
 
-configfile: 'config.yml'
+configfile: 'config/config.yml'
 
 #needed since std meshes sometimes use L/R instead of lh/rh
 hemi_to_H = dict({'lh': 'L', 'rh': 'R'})

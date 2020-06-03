@@ -8,4 +8,4 @@ singularity_connectome_workbench: /project/6007967/software/transparentsingulari
 # use the {subject} wildcard here.. 
 in_freesurfer: /project/6007967/cfmm-projects/Peters/tle3T_phase2/derivatives/fmriprep_1.5.0_outputs/freesurfer/sub-{subject}
 
-participants_tsv: participants.tsv
+participants_tsv: config/participants.tsv
