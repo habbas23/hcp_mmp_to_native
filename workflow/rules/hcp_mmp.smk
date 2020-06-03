@@ -21,7 +21,7 @@ rule get_tkr2scanner:
         tkr2scanner = 'results/hcp_mmp/sub-{subject}/tkr2scanner.xfm'
     container: config['singularity_freesurfer']
     log: 'logs/get_tkr2scanner/sub-{subject}.log'
-    shell: 'mri_info {input.t1} --tkr2scanner > {output.tkr2scanner} &> {log}'
+    shell: 'mri_info {input.t1} --tkr2scanner > {output.tkr2scanner} 2> {log}'
      
 rule apply_surf_tkr2scanner:
     input: 
@@ -32,7 +32,7 @@ rule apply_surf_tkr2scanner:
     threads: 8
     container: config['singularity_connectome_workbench']
     log: 'logs/apply_surf_tkr2scanner/sub-{subject}_{hemi}_{surfname}.log'
-    shell: 'OMP_NUM_THREADS={threads} wb_command -surface-apply-affine {input.surf} {input.tkr2scanner} {output.surf} &> {log}'
+    shell: 'wb_command -surface-apply-affine {input.surf} {input.tkr2scanner} {output.surf} &> {log}'
 
 
 rule gen_midthickness:
@@ -44,7 +44,7 @@ rule gen_midthickness:
     container: config['singularity_connectome_workbench']
     threads: 8
     log: 'logs/gen_midthickness/sub-{subject}_{hemi}.log'
-    shell: 'OMP_NUM_THREADS={threads} wb_command -surface-average {output.midthickness} -surf {input.white} -surf {input.pial} &> {log}'
+    shell: 'wb_command -surface-average {output.midthickness} -surf {input.white} -surf {input.pial} &> {log}'
    
 
 rule resample_subj_to_fsaverage_sphere:
@@ -61,7 +61,7 @@ rule resample_subj_to_fsaverage_sphere:
     container: config['singularity_connectome_workbench']
     threads: 8
     log: 'logs/resample_subj_to_fsaverage_sphere/sub-{subject}_{hemi}.log'
-    shell: 'OMP_NUM_THREADS={threads} wb_command -surface-resample {input.surf} {input.current_sphere} {input.new_sphere} {params.method} {output.surf} &> {log}'
+    shell: 'wb_command -surface-resample {input.surf} {input.current_sphere} {input.new_sphere} {params.method} {output.surf} &> {log}'
 
 
 rule resample_labels_to_subj_sphere:
@@ -81,7 +81,7 @@ rule resample_labels_to_subj_sphere:
     threads: 8
     log: 'logs/resample_labels_to_subj_sphere/sub-{subject}_{hemi}.log'
     shell: 
-        'OMP_NUM_THREADS={threads} wb_command -label-resample {input.label} {input.current_sphere} {input.new_sphere}'
+        'wb_command -label-resample {input.label} {input.current_sphere} {input.new_sphere}'
         ' {params.method} {output.label}'
         ' -area-surfs {input.current_surf} {input.new_surf} &> {log}'
 
@@ -100,7 +100,7 @@ rule map_labels_to_volume_ribbon:
     threads: 8
     log: 'logs/map_labels_to_volume_ribbon/sub-{subject}_{hemi}.log'
     shell:
-        'OMP_NUM_THREADS={threads} wb_command -label-to-volume-mapping {input.label} {input.surf} {input.vol_ref} {output.label_vol}'
+        'wb_command -label-to-volume-mapping {input.label} {input.surf} {input.vol_ref} {output.label_vol}'
         ' -ribbon-constrained {input.white_surf} {input.pial_surf}'
         ' -greedy &> {log}'
      
@@ -121,7 +121,7 @@ rule map_labels_to_volume_wmboundary:
     threads: 8
     log: 'logs/map_labels_to_volume_wmboundary/sub-{subject}_{hemi}_wmbound-{wmbdy}.log'
     shell:
-        'OMP_NUM_THREADS={threads} wb_command -label-to-volume-mapping {input.label} {input.surf} {input.vol_ref} {output.label_vol}'
+        'wb_command -label-to-volume-mapping {input.label} {input.surf} {input.vol_ref} {output.label_vol}'
         ' -nearest-vertex {params.nearest_vertex} &> {log}'
  
 
