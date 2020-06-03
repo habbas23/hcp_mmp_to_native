@@ -1,12 +1,12 @@
 rule convert_to_gifti:
     input: join(config['in_freesurfer'],'surf','{hemi}.{surfname}')
-    output: 'results/sub-{subject}/{hemi}.{surfname}.surf.gii'
+    output: 'results/hcp_mmp/sub-{subject}/{hemi}.{surfname}.surf.gii'
     singularity: config['singularity_freesurfer']
     shell: 'mris_convert {input} {output}'
 
 rule convert_to_nifti:
     input: join(config['in_freesurfer'],'mri','{volname}.mgz')
-    output: 'results/sub-{subject}/{volname}.nii.gz'
+    output: 'results/hcp_mmp/sub-{subject}/{volname}.nii.gz'
     singularity: config['singularity_freesurfer']
     shell: 'mri_convert {input} {output}'
 
@@ -14,18 +14,18 @@ rule convert_to_nifti:
 
 rule get_tkr2scanner:
     input: 
-        t1 = 'results/sub-{subject}/T1.nii.gz'
+        t1 = 'results/hcp_mmp/sub-{subject}/T1.nii.gz'
     output:
-        tkr2scanner = 'results/sub-{subject}/tkr2scanner.xfm'
+        tkr2scanner = 'results/hcp_mmp/sub-{subject}/tkr2scanner.xfm'
     singularity: config['singularity_freesurfer']
     shell: 'mri_info {input.t1} --tkr2scanner > {output.tkr2scanner}'
      
 rule apply_surf_tkr2scanner:
     input: 
-        surf = 'results/sub-{subject}/{hemi}.{surfname}.surf.gii',
-        tkr2scanner = 'results/sub-{subject}/tkr2scanner.xfm'
+        surf = 'results/hcp_mmp/sub-{subject}/{hemi}.{surfname}.surf.gii',
+        tkr2scanner = 'results/hcp_mmp/sub-{subject}/tkr2scanner.xfm'
     output: 
-        surf = 'results/sub-{subject}/{hemi}-scanner.{surfname}.surf.gii'
+        surf = 'results/hcp_mmp/sub-{subject}/{hemi}-scanner.{surfname}.surf.gii'
     threads: 8
     singularity: config['singularity_connectome_workbench']
     shell: 'OMP_NUM_THREADS={threads} wb_command -surface-apply-affine {input.surf} {input.tkr2scanner} {output.surf}'
@@ -33,10 +33,10 @@ rule apply_surf_tkr2scanner:
 
 rule gen_midthickness:
     input:
-        white = 'results/sub-{subject}/{hemi}.white.surf.gii',
-        pial = 'results/sub-{subject}/{hemi}.pial.surf.gii'
+        white = 'results/hcp_mmp/sub-{subject}/{hemi}.white.surf.gii',
+        pial = 'results/hcp_mmp/sub-{subject}/{hemi}.pial.surf.gii'
     output: 
-        midthickness = 'results/sub-{subject}/{hemi}.midthickness.surf.gii'
+        midthickness = 'results/hcp_mmp/sub-{subject}/{hemi}.midthickness.surf.gii'
     singularity: config['singularity_connectome_workbench']
     threads: 8
     shell: 'OMP_NUM_THREADS={threads} wb_command -surface-average {output.midthickness} -surf {input.white} -surf {input.pial}'
@@ -44,15 +44,15 @@ rule gen_midthickness:
 
 rule resample_subj_to_fsaverage_sphere:
     input: 
-        surf = 'results/sub-{subject}/{hemi}.midthickness.surf.gii',
-        current_sphere = 'results/sub-{subject}/{hemi}.sphere.reg.surf.gii',
+        surf = 'results/hcp_mmp/sub-{subject}/{hemi}.midthickness.surf.gii',
+        current_sphere = 'results/hcp_mmp/sub-{subject}/{hemi}.sphere.reg.surf.gii',
         new_sphere = lambda wildcards: 'resources/standard_mesh_atlases/resample_fsaverage/'
                                         'fs_LR-deformed_to-fsaverage.{H}.sphere.32k_fs_LR.surf.gii'.format(
                                                 H = hemi_to_H[wildcards.hemi])
     params:
         method = 'BARYCENTRIC'
     output:
-        surf = 'results/sub-{subject}/{hemi}.midthickness.32k_fs_LR.surf.gii'
+        surf = 'results/hcp_mmp/sub-{subject}/{hemi}.midthickness.32k_fs_LR.surf.gii'
     singularity: config['singularity_connectome_workbench']
     threads: 8
     shell: 'OMP_NUM_THREADS={threads} wb_command -surface-resample {input.surf} {input.current_sphere} {input.new_sphere} {params.method} {output.surf}'
@@ -64,13 +64,13 @@ rule resample_labels_to_subj_sphere:
         current_sphere = lambda wildcards: 'resources/standard_mesh_atlases/resample_fsaverage/'
                                             'fs_LR-deformed_to-fsaverage.{H}.sphere.32k_fs_LR.surf.gii'.format(
                                                 H = hemi_to_H[wildcards.hemi]),
-        new_sphere = 'results/sub-{subject}/{hemi}.sphere.reg.surf.gii',
-        current_surf = 'results/sub-{subject}/{hemi}.midthickness.32k_fs_LR.surf.gii',
-        new_surf = 'results/sub-{subject}/{hemi}.midthickness.surf.gii'
+        new_sphere = 'results/hcp_mmp/sub-{subject}/{hemi}.sphere.reg.surf.gii',
+        current_surf = 'results/hcp_mmp/sub-{subject}/{hemi}.midthickness.32k_fs_LR.surf.gii',
+        new_surf = 'results/hcp_mmp/sub-{subject}/{hemi}.midthickness.surf.gii'
     params:
         method = 'ADAP_BARY_AREA'
     output:
-        label = 'results/sub-{subject}/{hemi}.native.hcp-mmp.label.gii'
+        label = 'results/hcp_mmp/sub-{subject}/{hemi}.native.hcp-mmp.label.gii'
     singularity: config['singularity_connectome_workbench']
     threads: 8
     shell: 
@@ -82,13 +82,13 @@ rule resample_labels_to_subj_sphere:
 
 rule map_labels_to_volume_ribbon:
     input: 
-        label = 'results/sub-{subject}/{hemi}.native.hcp-mmp.label.gii',
-        surf = 'results/sub-{subject}/{hemi}-scanner.midthickness.surf.gii',
-        vol_ref = 'results/sub-{subject}/T1.nii.gz',
-        white_surf = 'results/sub-{subject}/{hemi}-scanner.white.surf.gii',
-        pial_surf = 'results/sub-{subject}/{hemi}-scanner.pial.surf.gii',
+        label = 'results/hcp_mmp/sub-{subject}/{hemi}.native.hcp-mmp.label.gii',
+        surf = 'results/hcp_mmp/sub-{subject}/{hemi}-scanner.midthickness.surf.gii',
+        vol_ref = 'results/hcp_mmp/sub-{subject}/T1.nii.gz',
+        white_surf = 'results/hcp_mmp/sub-{subject}/{hemi}-scanner.white.surf.gii',
+        pial_surf = 'results/hcp_mmp/sub-{subject}/{hemi}-scanner.pial.surf.gii',
     output:
-        label_vol = 'results/sub-{subject}/{hemi}.native.hcp-mmp.nii.gz',
+        label_vol = 'results/hcp_mmp/sub-{subject}/{hemi}.native.hcp-mmp.nii.gz',
     singularity: config['singularity_connectome_workbench']
     threads: 8
     shell:
@@ -100,15 +100,15 @@ rule map_labels_to_volume_ribbon:
 #currently optional
 rule map_labels_to_volume_wmboundary:
     input: 
-        label = 'results/sub-{subject}/{hemi}.native.hcp-mmp.label.gii',
-        surf = 'results/sub-{subject}/{hemi}.white.surf.gii',
-        vol_ref = 'results/sub-{subject}/T1.nii.gz',
-        white_surf = 'results/sub-{subject}/{hemi}.white.surf.gii',
-        pial_surf = 'results/sub-{subject}/{hemi}.pial.surf.gii',
+        label = 'results/hcp_mmp/sub-{subject}/{hemi}.native.hcp-mmp.label.gii',
+        surf = 'results/hcp_mmp/sub-{subject}/{hemi}.white.surf.gii',
+        vol_ref = 'results/hcp_mmp/sub-{subject}/T1.nii.gz',
+        white_surf = 'results/hcp_mmp/sub-{subject}/{hemi}.white.surf.gii',
+        pial_surf = 'results/hcp_mmp/sub-{subject}/{hemi}.pial.surf.gii',
     params:
         nearest_vertex = '{wmbdy}' 
     output:
-        label_vol = 'results/sub-{subject}/{hemi}.native-wmbound{wmbdy}.hcp-mmp.nii.gz',
+        label_vol = 'results/hcp_mmp/sub-{subject}/{hemi}.native-wmbound{wmbdy}.hcp-mmp.nii.gz',
     singularity: config['singularity_connectome_workbench']
     threads: 8
     shell:

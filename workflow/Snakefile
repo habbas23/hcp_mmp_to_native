@@ -21,6 +21,6 @@ hemis = 'lh rh'.split()
 
 
 rule all:
-    input: expand('results/sub-{subject}/{hemi}.native.hcp-mmp.nii.gz',subject=subjects,hemi=hemis)
+    input: expand('results/hcp_mmp/sub-{subject}/{hemi}.native.hcp-mmp.nii.gz',subject=subjects,hemi=hemis)
 
 include: 'rules/hcp_mmp.smk'
