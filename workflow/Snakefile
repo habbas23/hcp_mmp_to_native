@@ -1,10 +1,14 @@
 from os.path import join
 import pandas as pd
+from snakemake.utils import validate
 
 configfile: 'config/config.yml'
+validate(config, "schemas/config.schema.yml")
+
 
 #needed since std meshes sometimes use L/R instead of lh/rh
-hemi_to_H = dict({'lh': 'L', 'rh': 'R'})
+#hemi_to_H = dict({'lh': 'L', 'rh': 'R'})
+H_to_hemi = dict({'L': 'lh', 'R': 'rh'})
 
 wildcard_constraints:
     surfname='white|pial|sphere.reg',
@@ -12,15 +16,21 @@ wildcard_constraints:
 
 #load participants.tsv file, and strip off sub- from participant_id column
 df = pd.read_table(config['participants_tsv'])
+validate(df, 'schemas/participants.schema.yml')
+
 subjects = df.participant_id.to_list() 
 subjects = [ s.strip('sub-') for s in subjects ]
-    
 
-hemis = 'lh rh'.split()
 
+hemis = 'L R'.split()
+
+
+
+include: 'rules/common.smk'
 
 
 rule all_hcp_mmp_to_native:
-    input: expand('results/hcp_mmp/sub-{subject}/{hemi}.native.hcp-mmp.nii.gz',subject=subjects,hemi=hemis)
+    input: expand( bids(root='results/hcp_mmp',subject='{subject}',hemi='{hemi}',label='hcpmmp',space='native',suffix='dseg.nii.gz'),subject=subjects,hemi=hemis)
+         
 
 include: 'rules/hcp_mmp.smk'
