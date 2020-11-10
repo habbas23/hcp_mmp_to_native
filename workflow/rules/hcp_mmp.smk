@@ -1,5 +1,23 @@
+rule extract_from_tar:
+    input: 
+        tar = config['in_freesurfer_tar']
+    params:
+        out_folder = config['in_freesurfer_root'],
+        file_in_tar = 'sub-{subject}/{modality}/{filename}'
+    output: 
+        filename = join(config['in_freesurfer'],'{modality,surf|mri}','{filename}')
+    shell: 'mkdir -p {params.out_folder} && tar -C {params.out_folder} --extract --file={input.tar} {params.file_in_tar}'
+
+
+def get_gifti_input (wildcards):
+    if wildcards.surfname == 'pial': #add .T1 to the name (since pial is a symlink to pial.T1) so can use if extracting from tar
+        return join(config['in_freesurfer'],'surf','{hemi}.{surfname}.T1'.format(hemi=H_to_hemi[wildcards.hemi],surfname=wildcards.surfname))
+    else:
+        return join(config['in_freesurfer'],'surf','{hemi}.{surfname}'.format(hemi=H_to_hemi[wildcards.hemi],surfname=wildcards.surfname))
+        
+    
 rule convert_to_gifti:
-    input: lambda wildcards: join(config['in_freesurfer'],'surf','{hemi}.{surfname}'.format(hemi=H_to_hemi[wildcards.hemi],surfname=wildcards.surfname))
+    input: get_gifti_input
     output: bids(root='results/hcp_mmp',subject='{subject}',hemi='{hemi}',suffix='{surfname}.surf.gii',space='fsaverage')
     params: 
         license = config['fs_license']
