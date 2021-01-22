@@ -2,10 +2,11 @@ rule extract_from_tar:
     input: 
         tar = config['in_freesurfer_tar']
     params:
-        out_folder = config['in_freesurfer'],
+        out_folder = config['in_freesurfer_root'],
         file_in_tar = 'sub-{subject}/{modality}/{filename}'
     output: 
         filename = join(config['in_freesurfer'],'{modality,surf|mri}','{filename}')
+    group: 'participant1'
     shell: 'mkdir -p {params.out_folder} && tar -C {params.out_folder} --extract --file={input.tar} {params.file_in_tar}'
 
 
