@@ -2,7 +2,7 @@ rule extract_from_tar:
     input: 
         tar = config['in_freesurfer_tar']
     params:
-        out_folder = config['in_freesurfer_root'],
+        out_folder = config['in_freesurfer'],
         file_in_tar = 'sub-{subject}/{modality}/{filename}'
     output: 
         filename = join(config['in_freesurfer'],'{modality,surf|mri}','{filename}')

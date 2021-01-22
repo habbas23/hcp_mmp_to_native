@@ -8,10 +8,11 @@ fs_license: /project/6050199/akhanf/opt/freesurfer/.license
 
 #path to subject freesurfer dir (containing surf/ and mri/ subfolders) 
 # use the {subject} wildcard here.. 
-in_freesurfer: /scratch/akhanf/camcan_hcp_mmp_to_native/in_freesurfer/sub-{subject}
+#in_freesurfer: /scratch/akhanf/camcan_hcp_mmp_to_native/in_freesurfer/sub-{subject}
 
 #optional: specify tar containing a particular subject'a freesurfer folder
-in_freesurfer_root:  /scratch/akhanf/camcan_hcp_mmp_to_native/in_freesurfer/
-in_freesurfer_tar: /scratch/akhanf/camcan_freesurfer/sub-{subject}.tar
+#in_freesurfer_root:  /scratch/akhanf/camcan_hcp_mmp_to_native/in_freesurfer/
+in_freesurfer: 'freesurfer/sub-{subject}'
+in_freesurfer_tar: /project/6050199/akhanf/cfmm-bids/data/Burneo/EpLinkPhase3_Baseline/postproc3T_dev/freesurfer_7.1/results/sub-{subject}_freesurfer.tar
 
-participants_tsv: config/participants.tsv
+#participants_tsv: config/participants.tsv

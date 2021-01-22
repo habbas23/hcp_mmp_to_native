@@ -19,10 +19,10 @@ definitions:
       filter:
         type: string
 
-properties:
-  participants_tsv:
-    type: string
+#properties:
+#  participants_tsv:
+#    type: string
 
-required:
-  - participants_tsv
+#required:
+#  - participants_tsv
 
