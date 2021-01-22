@@ -6,6 +6,9 @@ Inputs:
 - For each target subject:
   - Freesurfer processed data
 
+**NEW**: If you have freesurfer data in sub-{subject}.tar files (i.e. to keep file numbers low on compute canada), then you can use the `input_tars` branch, and only modify the `in_freesurfer_tar` config variable.
+
+
 Singularity containers required:
  - Freesurfer (for `mri_convert`, `mris_convert`, `mri_info`)
  - Connectome workbench
